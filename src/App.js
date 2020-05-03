@@ -2,12 +2,10 @@ import React from 'react';
 import { Switch, Route, Redirect } from 'react-router-dom';
 
 import { createStructuredSelector } from 'reselect';
-
 import { connect } from 'react-redux';
-
 import { setCurrentUser } from './redux/user/user.actions';
-
 import { selectCurrentUser } from './redux/user/user.selector';
+import { selectCollectionsForPreview } from './redux/shop/shop.selectors';
 
 import './App.css';
 
@@ -17,7 +15,7 @@ import SignInAndSignUpPage from './pages/sign-in-and-sign-up/sign-in-and-sign-up
 import CheckoutPage from './pages/checkout/checkout.component';
 import Header from './components/header/header.component';
 
-import { auth, createUserProfileDocument } from './firebase/firebase.utils';
+import { auth, createUserProfileDocument, addCollectionAndDocuments } from './firebase/firebase.utils';
 
 class App extends React.Component {
   constructor() {
@@ -33,7 +31,7 @@ class App extends React.Component {
   componentDidMount() {
     // open subscription
     this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
-      const { setCurrentUser } = this.props;
+      const { setCurrentUser, collectionsArray } = this.props;
 
       // if users logged in, we will get this.
       if (userAuth) {
@@ -61,6 +59,8 @@ class App extends React.Component {
       //   currentUser: userAuth
       // });
       setCurrentUser(userAuth);
+      // this was called only once, to store static data into firebase !!!
+      //addCollectionAndDocuments('collections', collectionsArray.map(({ title, items }) => ({ title, items })));
 
       console.log({ user: userAuth });
     });
@@ -92,7 +92,8 @@ class App extends React.Component {
 // we are using here structured selector even though we have only one property because
 // in the future we can have more properties and then it is easier to add them with structured selector.
 const mapStateToProps = createStructuredSelector({
-  currentUser: selectCurrentUser
+  currentUser: selectCurrentUser,
+  collectionsArray: selectCollectionsForPreview
 });
 
 // const mapStateToProps = state => ({
